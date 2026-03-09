@@ -1,0 +1,277 @@
+#include "MainWindow.h"
+#include "SearchWindow.h"
+#include "PasswordDialog.h"
+#include "EditorWindow.h"
+#include <QTabWidget>
+#include <QMenuBar>
+#include <QDebug>
+#include <QTableView>
+#include <QStandardItemModel>
+#include "VIEW_COL_OF_TABLE.h"
+#include "SQL_TABLES.h"
+//! При смене виджета, прошлый уничтожается
+
+MainWindow::MainWindow(){
+	//PasswordDialog *pd = new PasswordDialog("med", "123");
+	//connect(pd, &PasswordDialog::user_is_enter, this, &MainWindow::CreateUI);
+	CreateUI();
+}
+
+MainWindow::~MainWindow(){
+	if (centrall_widget!=0)		delete centrall_widget;
+	// if (widget_main_menu!=0)	delete widget_main_menu;
+	// if (widget_service_list!=0)	delete widget_service_list;
+	// if (widget_doctor_list!=0)	delete widget_doctor_list;
+
+}
+
+void MainWindow::CreateUI(){
+	setMinimumSize(800,500);
+	open_main_menu();
+	CreateMenu();
+	show();
+}
+
+QWidget* MainWindow::CreateTableWidget(QList <TableElement> &t){
+	QStandardItemModel* model =  new QStandardItemModel(0, t.size());
+	for (short i=0; i<t.size(); i++){
+		model->setHeaderData(i, Qt::Horizontal, t.at(i).column_name);
+	}
+	QTableView *tv = new QTableView();
+	tv -> setModel(model);
+	tv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	connect(tv, &QTableView::doubleClicked, this, &MainWindow::edit_row_in_table);
+	
+	model -> setItem(0,0, new QStandardItem(QString::number(0)));
+	model -> setItem(0,1, new QStandardItem("Afruba"));
+	model -> setItem(1,0, new QStandardItem(QString::number(1)));
+	model -> setItem(1,1, new QStandardItem("Bura"));
+	model -> setItem(2,0, new QStandardItem(QString::number(2)));
+	model -> setItem(2,1, new QStandardItem("Toto"));
+	return tv;
+}
+
+void MainWindow::CreateMenu(){
+	if (menu_is_create) return;
+	
+	QAction *a = new QAction("Обновить");
+	connect(a, &QAction::triggered, this, &MainWindow::update_page);
+	menuBar() -> addAction(a);
+
+	a = new QAction("Поиск");
+	connect(a, &QAction::triggered, this, &MainWindow::search);
+	a->setShortcut(QKeySequence::Find);
+	menuBar() -> addAction(a);
+
+	a = new QAction("Добавить");
+	connect(a, &QAction::triggered, this, &MainWindow::add_to_cur_table);
+	menuBar() -> addAction(a);
+
+	QMenu *m = menuBar() -> addMenu("Создать в");
+	a = new QAction("Пациенты");
+	connect(a, &QAction::triggered, this, [=]() {add_to_oth_table(0);});
+	m -> addAction(a);
+	a = new QAction("Расписание");
+	connect(a, &QAction::triggered, this, [=]() {add_to_oth_table(1);});
+	m -> addAction(a);
+	a = new QAction("Контракт");
+	connect(a, &QAction::triggered, this, [=]() {add_to_oth_table(2);});
+	m -> addAction(a);
+
+	m = menuBar() ->	addMenu("Открыть");
+	a = new QAction("Главные Таблицы");
+	connect(a, &QAction::triggered, this, &MainWindow::open_main_menu);
+	m -> addAction(a);
+	a = new QAction("Таблица Услуг");
+	connect(a, &QAction::triggered, this, &MainWindow::open_service_list);
+	m -> addAction(a);
+	a = new QAction("Таблица Докторов");
+	connect(a, &QAction::triggered, this, &MainWindow::open_doctor_list);
+	m -> addAction(a);
+
+	m = menuBar() -> addMenu("Пользователь");
+	a = new QAction("Выйти");
+	connect(a, &QAction::triggered, this, &MainWindow::exit_from_acc);
+	m -> addAction(a);
+	a = new QAction("Закрыть");
+	connect(a, &QAction::triggered, this, &MainWindow::quit_from_app);
+	m -> addAction(a);
+	menu_is_create = true;
+}
+
+void MainWindow::update_page(){
+	qDebug() << "Update Page";
+	if(password_widget==0){
+		password_widget = new PasswordDialog("Afruba", "123");
+		connect(password_widget, &PasswordDialog::user_is_enter, this, &MainWindow::get_answer_from_pd);
+	}
+}
+
+void MainWindow::search(){
+	qDebug() << "Serach";
+	SearchWindow *sw;
+	// = new SearchWindow(CurrnetTable, "таблице");
+	switch(current_table){
+	case 0:
+		sw = new SearchWindow(TablePatient, "Пациенты");
+		break;
+	case 1:
+		sw = new SearchWindow(TableSchedules, "Расписание");
+		break;
+	case 2:
+		sw = new SearchWindow(TableMedDocs, "Мед Документы");
+		break;
+	case 3:
+		sw = new SearchWindow(TableService, "Услуги");
+		break;
+	case 4:
+		sw = new SearchWindow(TableDoctor, "Доктора");
+		break;
+	}
+	
+}
+
+
+
+void MainWindow::add_to_cur_table(){
+	qDebug() << "Add to current table";
+	add_to_oth_table(current_table);
+}
+
+
+void MainWindow::add_to_oth_table(short i){
+	qDebug() << "Add to other table";
+	EditorWindow *ew = 0;
+	QList<TableElement> t;
+	switch(i){
+	case 0:
+		t = SQLTable_Human;
+		t.append(SQLTable_Patient);
+		//Другое окно
+		break;
+	case 1:
+		t = SQLTable_Schedules;
+		break;
+	case 2:
+		t = SQLTable_MedDocs;
+		break;
+	case 3:
+		t = SQLTable_Service;
+		break;
+	case 4:
+		t = SQLTable_Human;
+		t.append(SQLTable_Doctor);
+		break;
+	}
+
+	ew = new EditorWindow(t, this, true, {}, i);
+}
+
+void MainWindow::open_main_menu(){
+	qDebug() << "Open Main Menu";
+	widget_service_list	= 0;
+	widget_doctor_list	= 0;
+	if (widget_main_menu == 0){
+		QTabWidget *t_widget = new QTabWidget();
+		t_widget -> addTab(CreateTableWidget(TablePatient), "Пациенты");
+		t_widget -> addTab(CreateTableWidget(TableSchedules), "Расписание");
+		t_widget -> addTab(CreateTableWidget(TableMedDocs), "Мед Документы");
+		widget_main_menu = t_widget;
+		connect(t_widget, &QTabWidget::currentChanged,this, &MainWindow::change_in_main_widget);
+	}
+	current_table = 0;
+	centrall_widget = widget_main_menu;
+	setCentralWidget(widget_main_menu);
+}
+
+void MainWindow::open_service_list(){
+	widget_main_menu	= 0;
+	widget_doctor_list	= 0;
+	qDebug() << "Open Serive List";
+	if (widget_service_list == 0){
+		widget_service_list = CreateTableWidget(TableService);
+	}
+	centrall_widget = widget_service_list;
+	current_table = 3;
+	setCentralWidget(widget_service_list);
+}
+
+void MainWindow::open_doctor_list(){
+	widget_service_list	= 0;
+	widget_main_menu	= 0;
+	qDebug() << "Open Doctor List";
+	if (widget_service_list == 0){
+		widget_doctor_list = CreateTableWidget(TableDoctor);
+	}
+	centrall_widget = widget_doctor_list;
+	current_table = 4;
+	setCentralWidget(widget_doctor_list);
+}
+
+void MainWindow::exit_from_acc(){
+	qDebug() << "Quit";
+	close();
+	PasswordDialog *pd = new PasswordDialog("med", "123");
+	connect(pd, &PasswordDialog::user_is_enter, this, &MainWindow::CreateUI);
+}
+
+void MainWindow::quit_from_app(){
+	qDebug() << "Exit";
+	delete this;
+}
+
+void MainWindow::get_answer_from_pd(bool status){
+	if(status) qDebug()<< "LOGIN +";
+	else qDebug()<< "LOGIN -";
+	password_widget = 0;
+}
+
+void MainWindow::change_in_main_widget(int index){
+	qDebug()<<index;
+	current_table = index;
+}
+
+void MainWindow::edit_row_in_table(const QModelIndex &index){
+    qDebug()<<index.row();
+    QStringList data_in_tbl = {};
+    //data_in_tbl.resize(get_current_table()->size());
+    for(short i=0; i< get_current_table().size(); i++){
+		QModelIndex mIndex = get_current_table_view()->model()->index(index.row(), i);
+		QString text = (mIndex.data()).toString();
+		data_in_tbl.push_back(text);
+    }
+    qDebug()<<data_in_tbl;
+    EditorWindow *ed = new EditorWindow(get_current_table(), this, false, data_in_tbl, index.row());
+}
+void MainWindow::change_data_in_cur_table(int row_id, QStringList new_data){
+	QTableView* table = get_current_table_view();
+	for(int i=0; i<new_data.size(); i++){
+		qDebug() << new_data[i];
+		QModelIndex mIndex = table->model()->index(row_id, i);
+		table -> model() -> setData(mIndex, QVariant(new_data[i]));
+	}
+	table -> update();
+}
+
+void MainWindow::add_data_in_table(int tbl_id, QStringList data){
+	qDebug()<<"Add new Data";
+	qDebug() << data;
+}
+
+
+QList<TableElement>& MainWindow::get_current_table(){
+    switch(current_table){
+	case 0: return TablePatient;
+	case 1: return TableSchedules;
+	case 2: return TableMedDocs;
+	case 3: return TableService;
+	case 4: return TableDoctor;
+    }
+}
+
+QTableView* MainWindow::get_current_table_view(){
+	if(current_table>2) return dynamic_cast<QTableView*>(centrall_widget);
+
+	QTabWidget *tb = dynamic_cast<QTabWidget*>(centrall_widget);
+	return dynamic_cast<QTableView*>(tb->currentWidget());	
+}
