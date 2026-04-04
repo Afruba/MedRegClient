@@ -1,0 +1,1 @@
+select  distinct to_char(action_date, 'yyyy Mon dd') as a_date from schedules order by a_date;

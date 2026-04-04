@@ -1,100 +1,41 @@
 #include "SQL_Manager.h"
+#include <fstream>
 #include <string>
 #include <QDebug>
-#include <QErrorMessage>
+#include <QMessageBox>
 void fill_bufer(QList<QStringList>& buf, pqxx::result &r);
+void show_error_msg(const char* msg);
+std::string load_request(std::string file_name);
 
-void get_patient_data(QList<QStringList>& buf, pqxx::connection *cx){
-    pqxx::work tx(*cx);
-    /*!
-    select human.human_id, concat_ws(' ',human_name, human_surname, human_patronymic) as FIO, human.posport_number, passport.date_of_birth,patient.medcard_number, human.phone_number FROM patient
-    inner JOIN human
-        ON human.human_id = patient.patient_id
-        inner JOIN passport
-        ON human.posport_number = passport.passport_number
-    */
-    pqxx::result r = tx.exec("select human.human_id, concat_ws(' ',human_name, human_surname, human_patronymic) as FIO, human.posport_number, passport.date_of_birth,patient.medcard_number, human.phone_number FROM patient inner JOIN human ON human.human_id = patient.patient_id  inner JOIN passport ON human.posport_number = passport.passport_number ORDER BY human.human_id;");
-    fill_bufer(buf, r);
-}
-void get_schedules_data(QList<QStringList>& buf, pqxx::connection *cx){
-    pqxx::work tx(*cx);
-    const char *sql_request =
-    "select schedules.action_id,"
-    "service.service_name,"
-    "concat_ws(' ',human_name, human_surname, human_patronymic) as FIO_P,"
-    "(select concat_ws(' ',human_name, human_surname, human_patronymic) as FIO_D from schedules"
-    " inner join human on human.human_id = (select service.doctor_id from service where schedules.service_id = service.service_id )limit 1) as FIO_D, "
-    "doctor.office,"
-    "schedules.action_date, "
-    "schedules.status FROM schedules "
-        "inner JOIN human ON human.human_id = schedules.patient_id "
-        "inner JOIN service ON service.service_id = schedules.service_id "
-        "inner JOIN doctor ON doctor.doctor_id = service.doctor_id"
-    " ORDER BY schedules.action_id;";
-    pqxx::result r = tx.exec(sql_request);
-    fill_bufer(buf, r);
-}
-
-void get_meddoc_data(QList<QStringList>& buf, pqxx::connection *cx){
-    pqxx::work tx(*cx);
-    const char *sql_request =
-    "select meddoc.meddoc_id,"
-    "meddoc.title,"
-    "concat_ws(' ',human_name, human_surname, human_patronymic) as Doc,"
-    "(select concat_ws(' ',human_name, human_surname, human_patronymic) FROM meddoc inner JOIN human ON human.human_id = meddoc.receiver) as Pat,"
-    "meddoc.date_of_ready,"
-    "meddoc.vlid_util,"
-    "meddoc.date_of_give FROM meddoc inner JOIN human ON human.human_id = meddoc.doctor_id"
-    " ORDER BY meddoc.meddoc_id;";
-    pqxx::result r = tx.exec(sql_request);
-    fill_bufer(buf, r);
-}
-
-void get_service_data(QList<QStringList>& buf, pqxx::connection *cx){
-    pqxx::work tx(*cx);
-    const char *sql_request =
-    "select service.service_id,"
-    "service.service_name,"
-    "concat_ws(' ',human_name, human_surname, human_patronymic) as FIO_D,"
-    "doctor.office,"
-    "service.price,"
-    "service.time_begin,"
-    "service.time_end FROM service "
-        "inner JOIN human ON human.human_id = service.doctor_id "
-        "inner JOIN doctor ON doctor.doctor_id = service.doctor_id"
-    " ORDER BY service.service_id;";
-    pqxx::result r = tx.exec(sql_request);
-    fill_bufer(buf, r);
-}
-
-void get_doctor_data(QList<QStringList>& buf, pqxx::connection *cx){
-    pqxx::work tx(*cx);
-    const char *sql_request =
-    "select doctor.doctor_id,"
-    "concat_ws(' ',human_name, human_surname, human_patronymic) as FIO_D,"
-    "doctor.office,"
-    "human.phone_number,"
-    "doctor.on_vacation,"
-    "doctor.on_work "
-    "FROM doctor inner JOIN human ON human.human_id = doctor.doctor_id"
-    " ORDER BY doctor.doctor_id;";
-    pqxx::result r = tx.exec(sql_request);
-    fill_bufer(buf, r);
-}
-
-void get_contract_data(QList<QStringList>& buf, pqxx::connection *cx){
-    pqxx::work tx(*cx);
-    const char *sql_request =
-    "select contract.contract_id,"
-    "contract.contract_title,"
-    "concat_ws(' ',human_name, human_surname, human_patronymic) as Customer,"
-    "(select concat_ws(' ',human_name, human_surname, human_patronymic) FROM contract inner JOIN human ON human.human_id = contract.executor) as Executor,"
-    "contract.executor,"
-    "contract.date_of_create "
-    "FROM contract inner JOIN human ON human.human_id = contract.customer"
-    " ORDER BY contract.contract_id;";
-    pqxx::result r = tx.exec(sql_request);
-    fill_bufer(buf, r);
+void get_data_from_sql_tbl(QList<QStringList>& buf, short tbl_id,pqxx::connection *cx, const QList<SQLFilter> &filters){
+    try{
+        std::string file_name;
+        switch(tbl_id){
+        case 0: file_name="patient.sreq";   break;
+        case 1: file_name="schedules.sreq"; break;
+        case 2: file_name="meddoc.sreq";    break;
+        case 3: file_name="service.sreq";   break;
+        case 4: file_name="doctor.sreq";    break;
+        case 5: file_name="contract.sreq";  break;
+        case 6: file_name="human.sreq";     break;
+        case 7: file_name="passport.sreq";  break;
+        }
+        std::string sql_request = load_request(file_name);
+        if(filters.size()!=0){
+            for(auto f: filters){
+                f.method = QChar(' ') + f.method + QChar(' ');
+                QString inserter = f.method + f.cln_name + f.param + f.value;
+                sql_request.insert(sql_request.size()-1, inserter.toStdString());
+                qDebug()<<QString::fromStdString(sql_request);
+            }
+        }
+        pqxx::work tx(*cx);
+        pqxx::result r = tx.exec(sql_request);
+        fill_bufer(buf, r);
+        qDebug()<<"[*] Data is load";
+    } catch(std::exception const &e){
+        show_error_msg(e.what()); 
+    }
 }
 
 void get_data_from_sql_tbl(QList<QStringList>& buf, QString table_name, QStringList columns, pqxx::connection *cx){
@@ -110,98 +51,74 @@ void get_data_from_sql_tbl(QList<QStringList>& buf, QString table_name, QStringL
     fill_bufer(buf, r);
 }
 
-bool inster_data_in_table(QStringList data, QString table_name, pqxx::connection *cx){
+unsigned int inster_data_in_table(QStringList data, QString table_name, QString id_column_name, pqxx::connection *cx){
     try{
         pqxx::work tx(*cx);
         std::string sql_request = "insert into " + table_name.toStdString() + " values (";
         short total = data.size();
         for(short i=0; i<total; i++){
             if(data[i]=="default") sql_request +="default";
-            else sql_request += '\''+data[i].toStdString()+'\'';
+            else sql_request += data[i].toStdString();
             if(i!=total-1) sql_request += ", ";
         }
-        sql_request+=");";
-        qDebug()<<data;
-        tx.exec(sql_request);
+        sql_request += (") RETURNING " + id_column_name.toStdString() + ";");
+
+        pqxx::field f = tx.exec(sql_request).one_field();
         tx.commit();
-        return true;
+        int last_id=0; last_id = f.as(last_id);
+
+        return last_id;
     } catch(std::exception const &e){
-        QErrorMessage em;
-        em.showMessage(e.what());
-        qDebug() << e.what();
-        return false;
+        show_error_msg(e.what());
+        return 0;
     }
 }
 
-void update_data_in_table(QStringList data, QStringList columns, QString table_name, unsigned int object_id, pqxx::connection *cx){
+void update_data_in_table(QStringList data, QStringList columns, QString table_name, QString object_id, pqxx::connection *cx){
     try{
-        qDebug()<<data;
         std::string sql_request = "UPDATE " + table_name.toStdString() + " SET ";
         for(short i=0; i<columns.size(); i++){
             if(data[i]!="default") {
-                sql_request += columns[i].toStdString() +" = "+ '\''+data[i].toStdString()+'\'';
+                sql_request += columns[i].toStdString() +" = "+ data[i].toStdString();
                 if(i!=columns.size()-1) sql_request += ", ";
             }
         }
-        sql_request += " WHERE " +columns[0].toStdString()+ " = " +std::to_string(object_id);
+        sql_request += " WHERE " +columns[0].toStdString()+ " = " +object_id.toStdString();
 
         pqxx::work tx(*cx);
         tx.exec(sql_request);
         tx.commit();
     } catch(std::exception const &e){
-        QErrorMessage em;
-        em.showMessage(e.what());
-        qDebug() << e.what();
+        show_error_msg(e.what()); 
     }
 }
 
-void delte_row_from_table (QString column_name, QString table_name, unsigned int object_id, pqxx::connection *cx){
+void delte_row_from_table (QString column_name, QString table_name, QString object_id, pqxx::connection *cx){
     try{
-        std::string sql_request = "DELETE FROM " +table_name.toStdString()+ " WHERE " +column_name.toStdString()+ " = \'" +std::to_string(object_id)+ "\';";
+        std::string sql_request = "DELETE FROM " +table_name.toStdString()+ " WHERE " +column_name.toStdString()+ " = " +object_id.toStdString()+ ";";
         pqxx::work tx(*cx);
         tx.exec(sql_request);
         tx.commit();
     } catch(std::exception const &e){
-        QErrorMessage em;
-        em.showMessage(e.what());
-        qDebug() << e.what();
+        show_error_msg(e.what()); 
     }
 }
 
 bool check_user_account(QString u_name, QString u_pass, pqxx::connection *cx){
     try{
-        std::string sql_request = "SELECT * FROM users WHERE user_name = \'" +u_name.toStdString()+ "\' AND user_password = \'" +u_pass.toStdString()+"\';";
+        std::string sql_request = "SELECT * FROM users WHERE user_name = \'" +u_name.toStdString()+ "\' AND user_password = " +u_pass.toStdString()+";";
         pqxx::work tx(*cx);
         pqxx::result r = tx.exec(sql_request);
         return r.size()!=0;
     } catch(std::exception const &e){
-        QErrorMessage em;
-        em.showMessage(e.what());
-        qDebug() << e.what();
+        show_error_msg(e.what()); 
     }
 }
 
-int get_last_elenent_id_in_tbl(QString table_name, pqxx::connection *cx){
+void get_row_data_from_tbl  (QStringList& buf, QString table_name, QString column_name, QString object_id, pqxx::connection *cx){
     try{
         pqxx::work tx(*cx);
-        std::string id_name = table_name.toStdString()+"_id";
-        std::string sql_request = "select " +id_name+ " from " +table_name.toStdString()+ " order by " +id_name+ " desc limit 1";
-
-        pqxx::field f = tx.exec(sql_request).one_field();
-        int id=0; id = f.as(id);
-        return id;
-        // auto id = r.as<int>();
-        // return std::get<0>(id); 
-    } catch(std::exception const &e){
-        qDebug() << "[E_SQL]: " << e.what();
-        return -1;
-    }
-}
-
-void get_row_data_from_tbl  (QStringList& buf, QString table_name, QString column_name, unsigned int object_id, pqxx::connection *cx){
-    try{
-        pqxx::work tx(*cx);
-        const std::string sql_request = "select * from " +table_name.toStdString()+ " where " +column_name.toStdString()+ " = \'" +std::to_string(object_id)+ "\';";
+        const std::string sql_request = "select * from " +table_name.toStdString()+ " where " +column_name.toStdString()+ "=" +object_id.toStdString()+ ";";
         pqxx::result r = tx.exec(sql_request);
 
         buf.clear();
@@ -210,14 +127,14 @@ void get_row_data_from_tbl  (QStringList& buf, QString table_name, QString colum
             for (auto const &field_ref: row_ref) buf.push_back(QString(field_ref.c_str()));
         }
     } catch(std::exception const &e){
-        qDebug() << "[E_SQL]: " << e.what();
+        show_error_msg(e.what()); 
     }
 }
 
 void find_elements(QStringList& buf, QString table_name, QString column_name, QString finder, pqxx::connection *cx){
     try{
         pqxx::work tx(*cx);
-        const std::string sql_request = "select * from " +table_name.toStdString()+ " where " +column_name.toStdString()+ " = \'" +finder.toStdString()+ "\';";
+        const std::string sql_request = "select * from " +table_name.toStdString()+ " where " +column_name.toStdString()+ "=" +finder.toStdString()+ ";";
         pqxx::result r = tx.exec(sql_request);
 
         buf.clear();
@@ -227,32 +144,10 @@ void find_elements(QStringList& buf, QString table_name, QString column_name, QS
             buf.push_back(s);
         }
     } catch(std::exception const &e){
-        qDebug() << "[E_SQL]: " << e.what();
+        show_error_msg(e.what()); 
     }
 }
 
-int get_last_elenent_id_in_tbl2(QString table_name, pqxx::connection *cx){
-    try{
-        pqxx::work tx(*cx);
-        std::string pkey_name = table_name.toStdString()+"_pkey";
-
-        cx->prepare(pkey_name, "insert into human values(default, '','','','',) select * from human;"); 
-        pqxx::result r = tx.exec_prepared(pkey_name);
-        // pqxx::field f = r.at(0,0).as<int>; 
-        // int id=0; id = f.as(id);
-        for(int i=0; i< r.size();i++){
-            qDebug() << "0:0" <<r[i][0].c_str();
-        }
-        
-        // int id = r.at(0,0).as<int>; 
-        return 0;
-        // auto id = r.as<int>();
-        // return std::get<0>(id); 
-    } catch(std::exception const &e){
-        qDebug() << "[E_SQL]: " << e.what();
-        return -1;
-    }
-}
 
 void fill_bufer(QList<QStringList>& buf, pqxx::result &r){
     buf.clear();
@@ -262,4 +157,81 @@ void fill_bufer(QList<QStringList>& buf, pqxx::result &r){
         for (auto const &field_ref: row_ref) data_in_row.push_back(QString(field_ref.c_str()));
         buf.push_back(data_in_row);
     }
+}
+
+std::string load_request(std::string file_name){
+    std::ifstream file("request/"+file_name);
+    if(!file.is_open()){
+        qDebug()<<"[E] File dont find";
+        return ""; 
+    }
+    std::string sql_request = "";
+    std::string buf="";
+    while(!file.eof()){
+        file>>buf;
+        sql_request += " " + buf;
+    }
+    file.close();
+    return sql_request;
+}
+
+bool SQL_check_doctor_in_service(QString object_id, pqxx::connection *cx){
+   try{
+        pqxx::work tx(*cx);
+        std::string sql_request = load_request("doctor.onVac_service.sreq");
+        sql_request.insert(sql_request.size()-1, object_id.toStdString());
+        pqxx::field f  = tx.exec(sql_request).one_field();
+        tx.commit();
+        std::string on_vacation = f.c_str();
+        qDebug()<<QString::fromStdString(on_vacation);
+        return on_vacation[0]=='t';
+    }catch(std::exception const &e){
+        show_error_msg(e.what()); 
+        return true;
+    }
+
+}
+QString get_FIO_human(QString object_id, pqxx::connection *cx){
+    pqxx::work tx(*cx);
+    std::string sql_request = load_request("human.FIO.sreq");
+    sql_request.insert(sql_request.size()-1, object_id.toStdString());
+    pqxx::field f  = tx.exec(sql_request).one_field();
+    tx.commit();
+    return QString(f.c_str());
+}
+void get_all_date_schedules(QStringList &buf, pqxx::connection *cx){
+    pqxx::work tx(*cx);
+    pqxx::result r = tx.exec(load_request("schedules_all_day.sreq"));
+
+    buf.clear();
+    for (auto const &row_ref: r)
+    {
+        for (auto const &field_ref: row_ref){
+            QString text = QString(field_ref.c_str());
+            QString Mon = text.mid(5,3);//text[3]+text[4]+text[5];
+            if     (QString::compare(Mon,"Jan")) Mon="Янв";
+            else if(QString::compare(Mon,"Feb")) Mon="Фев";
+            else if(QString::compare(Mon,"Mar")) Mon="Мар";
+            else if(QString::compare(Mon,"Apr")) Mon="Апр";
+            else if(QString::compare(Mon,"May")) Mon="Май";
+            else if(QString::compare(Mon,"Jun")) Mon="Июн";
+            else if(QString::compare(Mon,"Jul")) Mon="Июл";
+            else if(QString::compare(Mon,"Фгп")) Mon="Авг";
+            else if(QString::compare(Mon,"Sep")) Mon="Сен";
+            else if(QString::compare(Mon,"Okt")) Mon="Окт";
+            else if(QString::compare(Mon,"Nov")) Mon="Ноя";
+            else if(QString::compare(Mon,"Dec")) Mon="Дек";
+            text = QString(' ')+text.right(2)+QString(' ')+Mon+QString(' ')+text.left(4);
+            buf.push_back(text);
+        }
+    }
+}
+
+void show_error_msg(const char* msg){
+    QMessageBox messageBox;
+    //messageBox.critical(nullptr, qmsg);
+    messageBox.setText(msg);
+    messageBox.setFixedSize(500,200);
+    messageBox.setIcon(QMessageBox::Critical);
+    messageBox.exec();
 }

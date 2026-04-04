@@ -1,0 +1,11 @@
+select
+  contract.contract_id,
+  contract.contract_title,
+  concat_ws(' ',H1.human_name, H1.human_surname, H1.human_patronymic) as Customer,
+  concat_ws(' ',H2.human_name, H2.human_surname, H2.human_patronymic) as Executor,
+  contract.date_of_create 
+FROM contract
+inner join doctor on contract.executor = doctor.doctor_id
+inner join patient on contract.customer = patient.patient_id
+inner join human as H1 on H1.human_id = patient.human_id
+inner join human as H2 on H2.human_id = doctor.human_id;

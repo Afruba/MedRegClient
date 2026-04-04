@@ -1,0 +1,11 @@
+select
+patient.patient_id,
+concat_ws(' ',human_name, human_surname, human_patronymic) as FIO,
+human.posport_number,
+passport.date_of_birth,
+patient.medcard_number,
+patient.place_of_work,
+human.phone_number
+FROM patient
+	inner JOIN human ON human.human_id = patient.human_id 
+	inner JOIN passport ON human.posport_number = passport.passport_number;

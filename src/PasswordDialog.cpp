@@ -4,10 +4,11 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QCloseEvent>
+#include "SQL_Manager.h"
 
-PasswordDialog::PasswordDialog(QString un, QString up):
-up(up),
-un(un){
+PasswordDialog::PasswordDialog(pqxx::connection* sql_cn): sql_cn(sql_cn)
+{
+	setWindowTitle("Авторизация");
 	le_n = new QLineEdit();
 	le_p = new QLineEdit();
 	QGridLayout *l = new QGridLayout(this);
@@ -30,14 +31,14 @@ PasswordDialog::~PasswordDialog(){
 	delete layout();
 }
 
-// void PasswordDialog::user_is_enter(){
-
-// }
-
 void PasswordDialog::check_input(){
-	if (un == le_n->text() && up == le_p->text()){
+	if (check_user_account(le_n->text(), le_p->text(), sql_cn)){
 		ret_status = true;
 		close();
+	}
+	else if(!label_is_added){
+		label_is_added = true;
+		layout()-> addWidget(new QLabel("Неверный логин или пароль!"));
 	}
 }
 

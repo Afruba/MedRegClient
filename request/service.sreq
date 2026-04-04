@@ -1,0 +1,10 @@
+select service.service_id,
+    service.service_name,
+    concat_ws(' ',human_name, human_surname, human_patronymic) as FIO_D,
+    doctor.office,
+    service.price,
+    service.time_begin,
+    service.time_end
+FROM service 
+inner join doctor on service.doctor_id=doctor.doctor_id
+inner join human as H on H.human_id = doctor.human_id

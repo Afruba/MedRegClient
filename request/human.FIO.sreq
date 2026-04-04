@@ -1,0 +1,4 @@
+select
+    concat_ws(' ',human_name, human_surname, human_patronymic) as FIO
+FROM human
+where human_id=;

@@ -4,26 +4,29 @@
 #include "Table.h"
 class QLineEdit;
 class QCheckBox;
-
+class QDateTimeEdit;
 class InputField: public QWidget{
 Q_OBJECT
 public:
-	InputField(QString name, DataType dt, SQLTable link_t = NULL_T,bool is_editable = true);
+	InputField(TableElement te, bool full_prevel=false);
 	~InputField();
 	void SetIndicator(bool v);
+	void SetEnabled(bool v);
 	bool CheckInput();
-	QString GetValue();
-	QLineEdit* getLineEdit();
-	QCheckBox* getCheckBox();
-	DataType getDataType();
+
+	QString get_value();
+	void set_value(QString);
+	void change_table_element(TableElement te, bool full_prevel=false);
+	QLineEdit *get_line_edit();
 public slots:
 	void telephone_is_change(QString new_text);
-	void time_is_change(QString new_text);
-	void date_is_change(QString new_text);
 private:
-	QLineEdit *le = 0;
-	QCheckBox *cb = 0;
+	void create_ui(TableElement te, bool full_prevel=false);
+	QLineEdit		*le = 0;
+	QCheckBox		*cb = 0;
+	QDateTimeEdit	*dte = 0;
 	DataType dt;
+	bool is_nullable;
 
 };
 #endif

@@ -1,0 +1,9 @@
+select
+    doctor.doctor_id,
+    concat_ws(' ',human_name, human_surname, human_patronymic) as FIO_D,
+    human.phone_number,
+    doctor.office,
+    doctor.on_vacation,
+    doctor.on_work 
+FROM doctor inner JOIN human ON human.human_id = doctor.human_id
+ORDER BY doctor.doctor_id;

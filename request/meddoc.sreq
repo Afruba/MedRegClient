@@ -1,0 +1,9 @@
+select
+    meddoc.meddoc_id,
+    meddoc.title,
+    concat_ws(' ',human_name, human_surname, human_patronymic) as Doc,
+    (select concat_ws(' ',human_name, human_surname, human_patronymic) FROM meddoc inner JOIN human ON human.human_id = meddoc.receiver) as Pat,
+    meddoc.date_of_ready,
+    meddoc.vlid_util,
+    meddoc.date_of_give
+FROM meddoc inner JOIN human ON human.human_id = meddoc.doctor_id;

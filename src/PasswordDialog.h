@@ -2,12 +2,12 @@
 #define H_PD
 #include <QWidget>
 #include <QString>
-
+#include <pqxx/pqxx>
 class QLineEdit;
 class PasswordDialog: public QWidget{
 Q_OBJECT
 public:
-	PasswordDialog(QString un, QString up);
+	PasswordDialog(pqxx::connection* sql_cn);
 	~PasswordDialog();
 signals:
 	void user_is_enter(bool status);
@@ -18,7 +18,7 @@ private:
 	bool ret_status = false;
 	QLineEdit *le_n;
 	QLineEdit *le_p;
-	QString un = "";
-	QString up = "";
+	pqxx::connection* sql_cn;
+	bool label_is_added = false;
 };
 #endif

@@ -1,0 +1,3 @@
+select doctor.on_vacation from service
+inner join doctor on service.doctor_id = doctor.doctor_id
+where service.service_id=;

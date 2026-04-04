@@ -6,24 +6,33 @@ TEMPLATE = app
 TARGET = MedReg_Client
 INCLUDEPATH += .
 QT += core widgets
-# You can make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# Please consult the documentation of the deprecated API in order to know
-# how to port your code away from it.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+LIBS += /usr/lib/libpqxx.so
+RESOURCES = resources.qrc
 
-# Input
 HEADERS += src/MainWindow.h \
 src/Table.h \
 src/SearchWindow.h \
 src/PasswordDialog.h \
 src/EditorWindow.h \
+src/BigEditorWindow.h \
 src/InputField.h \
+src/EditField.h \
+src/SQLTableView.h \
+src/SQL_Manager.h \
+src/SQL_TABLES.h \
+src/VIEW_COL_OF_TABLE.h \
+src/SchedulesView.h \
 
 SOURCES += src/main.cpp \
 src/MainWindow.cpp \
 src/SearchWindow.cpp \
 src/PasswordDialog.cpp \
 src/EditorWindow.cpp \
+src/BigEditorWindow.cpp \
 src/InputField.cpp \
+src/EditField.cpp \
+src/SQLTableView.cpp \
+src/SQL_Manager.cpp \
+src/SQL_TABLES.cpp \
+src/VIEW_COL_OF_TABLE.cpp \
+src/SchedulesView.cpp \

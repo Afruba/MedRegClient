@@ -37,10 +37,10 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = MedReg_Client1.0.0
-DISTDIR = /home/afruba/FC/MedReg_Client/.tmp/MedReg_Client1.0.0
+DISTDIR = /home/afruba/MyGit/.tmp/MedReg_Client1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1 -pipe -O2 -flto=16 -fno-fat-lto-objects -fuse-linker-plugin -fPIC
-LIBS          = $(SUBLIBS) /usr/lib/libQt5Widgets.so /usr/lib/libQt5Gui.so /usr/lib/libQt5Core.so -lGL -lpthread   
+LIBS          = $(SUBLIBS) /usr/lib/libpqxx.so /usr/lib/libQt5Widgets.so /usr/lib/libQt5Gui.so /usr/lib/libQt5Core.so -lGL -lpthread   
 AR            = gcc-ar cqs
 RANLIB        = 
 SED           = sed
@@ -57,22 +57,46 @@ SOURCES       = src/main.cpp \
 		src/SearchWindow.cpp \
 		src/PasswordDialog.cpp \
 		src/EditorWindow.cpp \
-		src/InputField.cpp moc_MainWindow.cpp \
+		src/BigEditorWindow.cpp \
+		src/InputField.cpp \
+		src/EditField.cpp \
+		src/SQLTableView.cpp \
+		src/SQL_Manager.cpp \
+		src/SQL_TABLES.cpp \
+		src/VIEW_COL_OF_TABLE.cpp \
+		src/SchedulesView.cpp qrc_resources.cpp \
+		moc_MainWindow.cpp \
 		moc_SearchWindow.cpp \
 		moc_PasswordDialog.cpp \
 		moc_EditorWindow.cpp \
-		moc_InputField.cpp
+		moc_BigEditorWindow.cpp \
+		moc_InputField.cpp \
+		moc_EditField.cpp \
+		moc_SQLTableView.cpp \
+		moc_SchedulesView.cpp
 OBJECTS       = main.o \
 		MainWindow.o \
 		SearchWindow.o \
 		PasswordDialog.o \
 		EditorWindow.o \
+		BigEditorWindow.o \
 		InputField.o \
+		EditField.o \
+		SQLTableView.o \
+		SQL_Manager.o \
+		SQL_TABLES.o \
+		VIEW_COL_OF_TABLE.o \
+		SchedulesView.o \
+		qrc_resources.o \
 		moc_MainWindow.o \
 		moc_SearchWindow.o \
 		moc_PasswordDialog.o \
 		moc_EditorWindow.o \
-		moc_InputField.o
+		moc_BigEditorWindow.o \
+		moc_InputField.o \
+		moc_EditField.o \
+		moc_SQLTableView.o \
+		moc_SchedulesView.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
 		/usr/lib/qt/mkspecs/common/linux.conf \
@@ -182,12 +206,26 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		src/SearchWindow.h \
 		src/PasswordDialog.h \
 		src/EditorWindow.h \
-		src/InputField.h src/main.cpp \
+		src/BigEditorWindow.h \
+		src/InputField.h \
+		src/EditField.h \
+		src/SQLTableView.h \
+		src/SQL_Manager.h \
+		src/SQL_TABLES.h \
+		src/VIEW_COL_OF_TABLE.h \
+		src/SchedulesView.h src/main.cpp \
 		src/MainWindow.cpp \
 		src/SearchWindow.cpp \
 		src/PasswordDialog.cpp \
 		src/EditorWindow.cpp \
-		src/InputField.cpp
+		src/BigEditorWindow.cpp \
+		src/InputField.cpp \
+		src/EditField.cpp \
+		src/SQLTableView.cpp \
+		src/SQL_Manager.cpp \
+		src/SQL_TABLES.cpp \
+		src/VIEW_COL_OF_TABLE.cpp \
+		src/SchedulesView.cpp
 QMAKE_TARGET  = MedReg_Client
 DESTDIR       = 
 TARGET        = MedReg_Client
@@ -303,7 +341,8 @@ Makefile: MedReg_Client.pro /usr/lib/qt/mkspecs/linux-g++/qmake.conf /usr/lib/qt
 		/usr/lib/qt/mkspecs/features/exceptions.prf \
 		/usr/lib/qt/mkspecs/features/yacc.prf \
 		/usr/lib/qt/mkspecs/features/lex.prf \
-		MedReg_Client.pro
+		MedReg_Client.pro \
+		resources.qrc
 	$(QMAKE) -o Makefile MedReg_Client.pro
 /usr/lib/qt/mkspecs/features/spec_pre.prf:
 /usr/lib/qt/mkspecs/common/unix.conf:
@@ -410,6 +449,7 @@ Makefile: MedReg_Client.pro /usr/lib/qt/mkspecs/linux-g++/qmake.conf /usr/lib/qt
 /usr/lib/qt/mkspecs/features/yacc.prf:
 /usr/lib/qt/mkspecs/features/lex.prf:
 MedReg_Client.pro:
+resources.qrc:
 qmake: FORCE
 	@$(QMAKE) -o Makefile MedReg_Client.pro
 
@@ -424,9 +464,10 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
+	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents src/MainWindow.h src/Table.h src/SearchWindow.h src/PasswordDialog.h src/EditorWindow.h src/InputField.h $(DISTDIR)/
-	$(COPY_FILE) --parents src/main.cpp src/MainWindow.cpp src/SearchWindow.cpp src/PasswordDialog.cpp src/EditorWindow.cpp src/InputField.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents src/MainWindow.h src/Table.h src/SearchWindow.h src/PasswordDialog.h src/EditorWindow.h src/BigEditorWindow.h src/InputField.h src/EditField.h src/SQLTableView.h src/SQL_Manager.h src/SQL_TABLES.h src/VIEW_COL_OF_TABLE.h src/SchedulesView.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/main.cpp src/MainWindow.cpp src/SearchWindow.cpp src/PasswordDialog.cpp src/EditorWindow.cpp src/BigEditorWindow.cpp src/InputField.cpp src/EditField.cpp src/SQLTableView.cpp src/SQL_Manager.cpp src/SQL_TABLES.cpp src/VIEW_COL_OF_TABLE.cpp src/SchedulesView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -450,47 +491,80 @@ check: first
 
 benchmark: first
 
-compiler_rcc_make_all:
+compiler_rcc_make_all: qrc_resources.cpp
 compiler_rcc_clean:
+	-$(DEL_FILE) qrc_resources.cpp
+qrc_resources.cpp: resources.qrc \
+		/usr/bin/rcc \
+		res/system-search.png
+	/usr/bin/rcc -name resources resources.qrc -o qrc_resources.cpp
+
 compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
 moc_predefs.h: /usr/lib/qt/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -flto -fno-fat-lto-objects -Wall -Wextra -dM -E -o moc_predefs.h /usr/lib/qt/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_InputField.cpp
+compiler_moc_header_make_all: moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_BigEditorWindow.cpp moc_InputField.cpp moc_EditField.cpp moc_SQLTableView.cpp moc_SchedulesView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_InputField.cpp
+	-$(DEL_FILE) moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_BigEditorWindow.cpp moc_InputField.cpp moc_EditField.cpp moc_SQLTableView.cpp moc_SchedulesView.cpp
 moc_MainWindow.cpp: src/MainWindow.h \
 		src/Table.h \
 		moc_predefs.h \
 		/usr/bin/moc
-	/usr/bin/moc $(DEFINES) --include /home/afruba/FC/MedReg_Client/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/FC/MedReg_Client -I/home/afruba/FC/MedReg_Client -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/MainWindow.h -o moc_MainWindow.cpp
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/MainWindow.h -o moc_MainWindow.cpp
 
 moc_SearchWindow.cpp: src/SearchWindow.h \
 		src/InputField.h \
 		src/Table.h \
 		moc_predefs.h \
 		/usr/bin/moc
-	/usr/bin/moc $(DEFINES) --include /home/afruba/FC/MedReg_Client/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/FC/MedReg_Client -I/home/afruba/FC/MedReg_Client -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SearchWindow.h -o moc_SearchWindow.cpp
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SearchWindow.h -o moc_SearchWindow.cpp
 
 moc_PasswordDialog.cpp: src/PasswordDialog.h \
 		moc_predefs.h \
 		/usr/bin/moc
-	/usr/bin/moc $(DEFINES) --include /home/afruba/FC/MedReg_Client/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/FC/MedReg_Client -I/home/afruba/FC/MedReg_Client -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/PasswordDialog.h -o moc_PasswordDialog.cpp
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/PasswordDialog.h -o moc_PasswordDialog.cpp
 
 moc_EditorWindow.cpp: src/EditorWindow.h \
+		src/EditField.h \
 		src/InputField.h \
 		src/Table.h \
 		moc_predefs.h \
 		/usr/bin/moc
-	/usr/bin/moc $(DEFINES) --include /home/afruba/FC/MedReg_Client/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/FC/MedReg_Client -I/home/afruba/FC/MedReg_Client -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/EditorWindow.h -o moc_EditorWindow.cpp
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/EditorWindow.h -o moc_EditorWindow.cpp
+
+moc_BigEditorWindow.cpp: src/BigEditorWindow.h \
+		src/EditField.h \
+		src/InputField.h \
+		src/Table.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/BigEditorWindow.h -o moc_BigEditorWindow.cpp
 
 moc_InputField.cpp: src/InputField.h \
 		src/Table.h \
 		moc_predefs.h \
 		/usr/bin/moc
-	/usr/bin/moc $(DEFINES) --include /home/afruba/FC/MedReg_Client/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/FC/MedReg_Client -I/home/afruba/FC/MedReg_Client -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/InputField.h -o moc_InputField.cpp
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/InputField.h -o moc_InputField.cpp
+
+moc_EditField.cpp: src/EditField.h \
+		src/InputField.h \
+		src/Table.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/EditField.h -o moc_EditField.cpp
+
+moc_SQLTableView.cpp: src/SQLTableView.h \
+		src/Table.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SQLTableView.h -o moc_SQLTableView.cpp
+
+moc_SchedulesView.cpp: src/SchedulesView.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SchedulesView.h -o moc_SchedulesView.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -504,7 +578,7 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean 
 
 ####### Compile
 
@@ -517,25 +591,83 @@ MainWindow.o: src/MainWindow.cpp src/MainWindow.h \
 		src/SearchWindow.h \
 		src/InputField.h \
 		src/PasswordDialog.h \
-		src/EditorWindow.h
+		src/EditorWindow.h \
+		src/EditField.h \
+		src/BigEditorWindow.h \
+		src/SQLTableView.h \
+		src/SchedulesView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
 SearchWindow.o: src/SearchWindow.cpp src/SearchWindow.h \
 		src/InputField.h \
-		src/Table.h
+		src/Table.h \
+		src/SQLTableView.h \
+		src/SQL_TABLES.h \
+		src/SQL_Manager.h \
+		src/VIEW_COL_OF_TABLE.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SearchWindow.o src/SearchWindow.cpp
 
-PasswordDialog.o: src/PasswordDialog.cpp src/PasswordDialog.h
+PasswordDialog.o: src/PasswordDialog.cpp src/PasswordDialog.h \
+		src/SQL_Manager.h \
+		src/Table.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o PasswordDialog.o src/PasswordDialog.cpp
 
 EditorWindow.o: src/EditorWindow.cpp src/EditorWindow.h \
+		src/EditField.h \
 		src/InputField.h \
-		src/Table.h
+		src/Table.h \
+		src/SQL_Manager.h \
+		src/SQL_TABLES.h \
+		src/SearchWindow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EditorWindow.o src/EditorWindow.cpp
+
+BigEditorWindow.o: src/BigEditorWindow.cpp src/BigEditorWindow.h \
+		src/EditField.h \
+		src/InputField.h \
+		src/Table.h \
+		src/SQL_Manager.h \
+		src/SQL_TABLES.h \
+		src/SearchWindow.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BigEditorWindow.o src/BigEditorWindow.cpp
 
 InputField.o: src/InputField.cpp src/InputField.h \
 		src/Table.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o InputField.o src/InputField.cpp
+
+EditField.o: src/EditField.cpp src/EditField.h \
+		src/InputField.h \
+		src/Table.h \
+		src/SearchWindow.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EditField.o src/EditField.cpp
+
+SQLTableView.o: src/SQLTableView.cpp src/SQLTableView.h \
+		src/Table.h \
+		src/EditorWindow.h \
+		src/EditField.h \
+		src/InputField.h \
+		src/VIEW_COL_OF_TABLE.h \
+		src/SQL_Manager.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SQLTableView.o src/SQLTableView.cpp
+
+SQL_Manager.o: src/SQL_Manager.cpp src/SQL_Manager.h \
+		src/Table.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SQL_Manager.o src/SQL_Manager.cpp
+
+SQL_TABLES.o: src/SQL_TABLES.cpp src/SQL_TABLES.h \
+		src/Table.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SQL_TABLES.o src/SQL_TABLES.cpp
+
+VIEW_COL_OF_TABLE.o: src/VIEW_COL_OF_TABLE.cpp src/VIEW_COL_OF_TABLE.h \
+		src/Table.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o VIEW_COL_OF_TABLE.o src/VIEW_COL_OF_TABLE.cpp
+
+SchedulesView.o: src/SchedulesView.cpp src/SchedulesView.h \
+		src/Table.h \
+		src/SQL_Manager.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SchedulesView.o src/SchedulesView.cpp
+
+qrc_resources.o: qrc_resources.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp
 
 moc_MainWindow.o: moc_MainWindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_MainWindow.o moc_MainWindow.cpp
@@ -549,8 +681,20 @@ moc_PasswordDialog.o: moc_PasswordDialog.cpp
 moc_EditorWindow.o: moc_EditorWindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EditorWindow.o moc_EditorWindow.cpp
 
+moc_BigEditorWindow.o: moc_BigEditorWindow.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_BigEditorWindow.o moc_BigEditorWindow.cpp
+
 moc_InputField.o: moc_InputField.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_InputField.o moc_InputField.cpp
+
+moc_EditField.o: moc_EditField.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EditField.o moc_EditField.cpp
+
+moc_SQLTableView.o: moc_SQLTableView.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SQLTableView.o moc_SQLTableView.cpp
+
+moc_SchedulesView.o: moc_SchedulesView.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SchedulesView.o moc_SchedulesView.cpp
 
 ####### Install
 

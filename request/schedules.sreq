@@ -1,0 +1,15 @@
+select
+  schedules.action_id,
+  service.service_name,
+  concat_ws(' ',H1.human_name, H1.human_surname, H1.human_patronymic) as FIO_P,
+  concat_ws(' ',H2.human_name, H2.human_surname, H2.human_patronymic) as FIO_D,
+  doctor.office,
+  to_char(schedules.action_date, 'yyyy Mon dd') as a_date,
+  to_char(schedules.action_date, 'HH24:MI') as a_time,
+  schedules.status
+from schedules
+inner join service on schedules.service_id = service.service_id
+inner join doctor on service.doctor_id = doctor.doctor_id
+inner join patient on schedules.patient_id = patient.patient_id
+inner join human as H1 on H1.human_id = patient.human_id
+inner join human as H2 on H2.human_id = doctor.human_id;
