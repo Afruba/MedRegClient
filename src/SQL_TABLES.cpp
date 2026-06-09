@@ -4,9 +4,9 @@
 //				column_name		human_column_name	column_type		link_to_table	primaly_key	max		is_nullable
 QList<TableElement> SQLTable_Patient{
 	TableElement("patient_id",			"Номер Пациента",		Int,	NULL_T,		true),
-	TableElement("medcard_number",		"Номер медкарты",		Int,	NULL_T,		false, 12, true),
-	TableElement("place_of_work",		"Место работы",			String, NULL_T,		false, 80, true),
-	TableElement("human_id",			"Номер Человека",		Int,	Human,		false, 0, false)
+	TableElement("medcard_number",		"Номер медкарты",		Int,	NULL_T,		false, 12,	true),
+	TableElement("place_of_work",		"Место работы",			String, NULL_T,		false, 80,	true),
+	TableElement("human_id",			"Номер Человека",		Int,	Human,		false, 0,	true)
 };
 
 QList<TableElement> SQLTable_Doctor{
@@ -23,7 +23,8 @@ QList<TableElement> SQLTable_Service{
 	TableElement("doctor_id", 			"Доктор",				Int,	Doctor,		false, 0 , true),//EditorWindow::CheckAllFields
 	TableElement("price", 				"Цена",					Int,	NULL_T,		false, 0 , true),
 	TableElement("time_begin", 			"Вермя начала приёма",	Time, 	NULL_T,		false, 0 , true),
-	TableElement("time_end", 			"Вермя конца приёма",	Time,	NULL_T,		false, 0 , true)
+	TableElement("time_end", 			"Вермя конца приёма",	Time,	NULL_T,		false, 0 , true),
+	TableElement("time_delay", 			"Промежуток приёма",	Time,	NULL_T,		false, 0 , true)
 };
 
 QList<TableElement> SQLTable_Contract{
@@ -66,10 +67,11 @@ QList<TableElement> SQLTable_Human{
 	TableElement("human_id",			"Номер",				Int,	NULL_T, 	true),
 	TableElement("human_name",			"Имя",					String, NULL_T, 	false, 20),
 	TableElement("human_surname",		"Фамилия",				String, NULL_T, 	false, 24),
-	TableElement("human_patronymic",	"Отчество",				String, NULL_T, 	false, 30),
-	TableElement("human_gender",		"Пол",					Char),
-	TableElement("posport_number",		"Номер Паспорта",		StrInt,	Passport,false, 6, true),
-	TableElement("phone_number",		"Номер Телефона",		Telephone, NULL_T,	false, 16)
+	TableElement("human_patronymic",	"Отчество",				String, NULL_T, 	false, 30, true),
+	TableElement("human_gender",		"Пол",					Sex),
+	TableElement("posport_number",		"Номер Паспорта",		StrInt,	Passport,	false, 6, true),
+	TableElement("phone_number",		"Номер Телефона",		Telephone, NULL_T,	false, 16),
+	TableElement("place_of_life",		"Место жительства",		String, NULL_T, 	false, 100)
 };
 
 

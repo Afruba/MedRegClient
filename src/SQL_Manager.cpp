@@ -26,12 +26,46 @@ void get_data_from_sql_tbl(QList<QStringList>& buf, short tbl_id,pqxx::connectio
                 f.method = QChar(' ') + f.method + QChar(' ');
                 QString inserter = f.method + f.cln_name + f.param + f.value;
                 sql_request.insert(sql_request.size()-1, inserter.toStdString());
-                qDebug()<<QString::fromStdString(sql_request);
             }
         }
+         qDebug()<< QString::fromStdString(sql_request);
         pqxx::work tx(*cx);
         pqxx::result r = tx.exec(sql_request);
+        qDebug()<<"R SIZE: "<<r.size();
+        if(r.size()==0) return;
         fill_bufer(buf, r);
+       
+        qDebug()<<"[*] Data is load";
+    } catch(std::exception const &e){
+        show_error_msg(e.what()); 
+    }
+}
+void get_row_data_from_Htbl  (QStringList &buf, short tbl_id, QString column_name, QString object_id, pqxx::connection *cx){
+    try{
+        pqxx::work tx(*cx);
+        std::string file_name;
+        switch(tbl_id){
+        case 0: file_name="patient.sreq";   break;
+        case 1: file_name="schedules.sreq"; break;
+        case 2: file_name="meddoc.sreq";    break;
+        case 3: file_name="service.sreq";   break;
+        case 4: file_name="doctor.sreq";    break;
+        case 5: file_name="contract.sreq";  break;
+        case 6: file_name="human.sreq";     break;
+        case 7: file_name="passport.sreq";  break;
+        }
+        std::string sql_request = load_request(file_name);
+        QString inserter = QString(" where ") +column_name+ '=' +object_id;
+        sql_request.insert(sql_request.size()-1, inserter.toStdString());
+        qDebug() << QString::fromStdString(sql_request);
+        pqxx::result r = tx.exec(sql_request);
+        qDebug()<<"R SIZE: "<<r.size();
+        buf.clear();
+        for (auto const &row_ref: r)
+        {
+            for (auto const &field_ref: row_ref) buf.push_back(QString(field_ref.c_str()));
+        }
+
         qDebug()<<"[*] Data is load";
     } catch(std::exception const &e){
         show_error_msg(e.what()); 
@@ -51,7 +85,7 @@ void get_data_from_sql_tbl(QList<QStringList>& buf, QString table_name, QStringL
     fill_bufer(buf, r);
 }
 
-unsigned int inster_data_in_table(QStringList data, QString table_name, QString id_column_name, pqxx::connection *cx){
+unsigned int inster_data_in_table(QStringList &data, QString table_name, QString id_column_name, pqxx::connection *cx){
     try{
         pqxx::work tx(*cx);
         std::string sql_request = "insert into " + table_name.toStdString() + " values (";
@@ -74,7 +108,7 @@ unsigned int inster_data_in_table(QStringList data, QString table_name, QString 
     }
 }
 
-void update_data_in_table(QStringList data, QStringList columns, QString table_name, QString object_id, pqxx::connection *cx){
+void update_data_in_table(QStringList &data, QStringList &columns, QString table_name, QString object_id, pqxx::connection *cx){
     try{
         std::string sql_request = "UPDATE " + table_name.toStdString() + " SET ";
         for(short i=0; i<columns.size(); i++){
@@ -106,7 +140,7 @@ void delte_row_from_table (QString column_name, QString table_name, QString obje
 
 bool check_user_account(QString u_name, QString u_pass, pqxx::connection *cx){
     try{
-        std::string sql_request = "SELECT * FROM users WHERE user_name = \'" +u_name.toStdString()+ "\' AND user_password = " +u_pass.toStdString()+";";
+        std::string sql_request = "SELECT * FROM users WHERE user_name = '" +u_name.toStdString()+ "' AND user_password = '" +u_pass.toStdString()+"';";
         pqxx::work tx(*cx);
         pqxx::result r = tx.exec(sql_request);
         return r.size()!=0;
@@ -199,9 +233,11 @@ QString get_FIO_human(QString object_id, pqxx::connection *cx){
     tx.commit();
     return QString(f.c_str());
 }
-void get_all_date_schedules(QStringList &buf, pqxx::connection *cx){
+void get_all_date_schedules(QStringList &buf, pqxx::connection *cx, bool check_status){
     pqxx::work tx(*cx);
-    pqxx::result r = tx.exec(load_request("schedules_all_day.sreq"));
+    pqxx::result r;
+    if(check_status) r = tx.exec(load_request("schedules_all_day_no_compleate.sreq"));
+    else r = tx.exec(load_request("schedules_all_day.sreq"));
 
     buf.clear();
     for (auto const &row_ref: r)
@@ -209,21 +245,40 @@ void get_all_date_schedules(QStringList &buf, pqxx::connection *cx){
         for (auto const &field_ref: row_ref){
             QString text = QString(field_ref.c_str());
             QString Mon = text.mid(5,3);//text[3]+text[4]+text[5];
-            if     (QString::compare(Mon,"Jan")) Mon="Янв";
-            else if(QString::compare(Mon,"Feb")) Mon="Фев";
-            else if(QString::compare(Mon,"Mar")) Mon="Мар";
-            else if(QString::compare(Mon,"Apr")) Mon="Апр";
-            else if(QString::compare(Mon,"May")) Mon="Май";
-            else if(QString::compare(Mon,"Jun")) Mon="Июн";
-            else if(QString::compare(Mon,"Jul")) Mon="Июл";
-            else if(QString::compare(Mon,"Фгп")) Mon="Авг";
-            else if(QString::compare(Mon,"Sep")) Mon="Сен";
-            else if(QString::compare(Mon,"Okt")) Mon="Окт";
-            else if(QString::compare(Mon,"Nov")) Mon="Ноя";
-            else if(QString::compare(Mon,"Dec")) Mon="Дек";
+            if     (QString::compare(Mon,"Jan")==0) Mon="Янв";
+            else if(QString::compare(Mon,"Feb")==0) Mon="Фев";
+            else if(QString::compare(Mon,"Mar")==0) Mon="Мар";
+            else if(QString::compare(Mon,"Apr")==0) Mon="Апр";
+            else if(QString::compare(Mon,"May")==0) Mon="Май";
+            else if(QString::compare(Mon,"Jun")==0) Mon="Июн";
+            else if(QString::compare(Mon,"Jul")==0) Mon="Июл";
+            else if(QString::compare(Mon,"Aug")==0) Mon="Авг";
+            else if(QString::compare(Mon,"Sep")==0) Mon="Сен";
+            else if(QString::compare(Mon,"Okt")==0) Mon="Окт";
+            else if(QString::compare(Mon,"Nov")==0) Mon="Ноя";
+            else if(QString::compare(Mon,"Dec")==0) Mon="Дек";
             text = QString(' ')+text.right(2)+QString(' ')+Mon+QString(' ')+text.left(4);
             buf.push_back(text);
         }
+    }
+}
+
+void get_all_action_time_for_day(QStringList &buf, QString service_id, QString date, pqxx::connection *cx){
+    qDebug()<<"DATE: "<<date;
+    try{
+        pqxx::work tx(*cx);
+        std::string sql_request = load_request("schedules_all_times.sreq");
+        QString inserter = date+QString(" AND service_id=")+service_id;
+        sql_request.insert(sql_request.size()-1, inserter.toStdString());
+        qDebug()<<QString::fromStdString(sql_request);
+        pqxx::result r = tx.exec(sql_request);
+        buf.clear();
+        for (auto const &row_ref: r)
+        {
+            for (auto const &field_ref: row_ref) buf.push_back(QString(field_ref.c_str()));
+        }
+    }catch(std::exception const &e){
+        show_error_msg(e.what()); 
     }
 }
 

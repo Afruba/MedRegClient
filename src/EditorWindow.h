@@ -17,6 +17,7 @@ public slots:
 	void CheckAllFields();
 	void closeEvent (QCloseEvent *event);
 	void delete_data();
+	void print_this_contract();
 signals:
 	void data_is_changed();
 private:

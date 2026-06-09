@@ -6,10 +6,13 @@
 #include <QValidator>
 #include <QLabel>
 #include <QPushButton>
+#include <QButtonGroup>
+#include <QRadioButton>
 #include <QDebug>
 InputField::InputField(TableElement te, bool full_prevel):
 dt(te.column_type), is_nullable(te.is_nullable){
-	QHBoxLayout *layout = new QHBoxLayout(this);
+	new QHBoxLayout(this);
+	setMaximumWidth(300);
 	create_ui(te, full_prevel);
 }
 
@@ -43,6 +46,17 @@ void InputField::create_ui(TableElement te, bool full_prevel){
 		cb = new QCheckBox();
 		layout() -> addWidget(cb);
 	}
+	else if(dt==Sex){
+		btg = new QButtonGroup();
+		QRadioButton *btn = new QRadioButton("М");
+		layout() -> addWidget(btn);
+		btg->addButton(btn,0);
+
+		btn = new QRadioButton("Ж");
+		layout() -> addWidget(btn);
+		btg->addButton(btn,1);
+		btg->button(0)->setChecked(true);
+	}
 	else if(dt==Time){
 		dte = new QTimeEdit();
 		layout() -> addWidget(dte);
@@ -57,6 +71,7 @@ void InputField::create_ui(TableElement te, bool full_prevel){
 	}
 	else{
 		le = new QLineEdit();
+		connect(le, &QLineEdit::editingFinished, this, &InputField::emit_signal_finished);
 		le->setEnabled(!te.primaly_key || full_prevel);
 		if(dt==String) {
 			le -> setMaxLength(te.max_char_count);
@@ -75,6 +90,7 @@ void InputField::create_ui(TableElement te, bool full_prevel){
 				layout() -> addWidget(le);
 			}
 			else if (dt==StrInt){
+				le -> setMaxLength(te.max_char_count);
 				QRegularExpression rx(QString("^\\d{0,%1}$").arg(te.max_char_count));
 				validator = new QRegularExpressionValidator(rx, this);
 				le -> setValidator(validator);
@@ -132,6 +148,9 @@ void InputField::telephone_is_change(QString new_text){
 	if (is_change) le->setText(new_text);
 }
 
+void InputField::emit_signal_finished(){
+	emit edit_finished(le->text());
+}
 
 bool InputField::CheckInput(){
 
@@ -157,13 +176,14 @@ void InputField::SetEnabled(bool v){
 	layout() -> itemAt(1) -> widget() -> setEnabled(v);
 }
 
-QString InputField::get_value(){
+QString InputField::get_value(bool full){
 	if(le!=0){
 		if(!(le->isEnabled())) return "default";
 		else{
 			QString text = le->text();
 
-			return (!text.isEmpty())? '\''+(le->text())+'\'' : "";
+			if(full) return (!text.isEmpty())? '\''+(le->text())+'\'' : "''";
+			else  return (!text.isEmpty())? le->text() : "";
 		}
 	}
 	else if (cb!=0){
@@ -178,9 +198,16 @@ QString InputField::get_value(){
 
 		else if(dt==Timestamp) text = dte->dateTime().toString("yyyy/MM/dd hh:mm:ss");
 
-		return '\''+text+'\'';
+		if(full) return '\''+text+'\'';
+		else return text;
 	}
-	return "";
+	else if(btg!=0){
+		return (btg->checkedId()==0)? "'М'":"'Ж'";
+	}
+	return "''";
+}
+QDate InputField::get_date(){
+	if(dte!=0) return dte->date();
 }
 void InputField::set_value(QString v){
 	if(le!=0){
@@ -197,7 +224,7 @@ void InputField::set_value(QString v){
 			QRegularExpressionMatch m = re.match(v);
 			qDebug() << m.captured("year") << m.captured("month") << m.captured("date");
 			QDate d(m.captured("year").toInt(), m.captured("month").toInt(), m.captured("date").toInt());
-			dte->setDate(d);
+			dte -> setDate(d);
 		} 
 		else if(dt==Time){
 			QRegularExpression re("^(\\d{2})\\:(\\d{2})\\:(\\d{2})$");
@@ -213,6 +240,13 @@ void InputField::set_value(QString v){
 			dte->setDateTime(QDateTime(d,t));
 		} 
 	}
+	else if(btg!=0){
+		(v=="М")? btg->button(0)->setChecked(true) : btg->button(1)->setChecked(true);
+	}
+	emit edit_finished(v);
+}
+void InputField::set_value(QDate d){
+	if(dte!=0){ dte->setDate(d);}
 }
 
 QLineEdit *InputField::get_line_edit(){

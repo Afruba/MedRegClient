@@ -9,6 +9,7 @@
 PasswordDialog::PasswordDialog(pqxx::connection* sql_cn): sql_cn(sql_cn)
 {
 	setWindowTitle("Авторизация");
+	setFixedSize(300,150);
 	le_n = new QLineEdit();
 	le_p = new QLineEdit();
 	QGridLayout *l = new QGridLayout(this);
@@ -17,6 +18,9 @@ PasswordDialog::PasswordDialog(pqxx::connection* sql_cn): sql_cn(sql_cn)
 	l -> addWidget(new QLabel("Пароль"), 1, 0);
 	l -> addWidget(le_p, 1, 1);
 	QPushButton *button = new QPushButton("Войти");
+	button->setDefault(true);
+    button->setAutoDefault(false);
+	// /button->setShortcut(QKeySequence(tr("Enter")));
 	connect(button, &QPushButton::pressed , this, &PasswordDialog::check_input);
 	l -> addWidget(button, 2, 0);
 	show();
@@ -38,12 +42,12 @@ void PasswordDialog::check_input(){
 	}
 	else if(!label_is_added){
 		label_is_added = true;
-		layout()-> addWidget(new QLabel("Неверный логин или пароль!"));
+		dynamic_cast<QGridLayout*>(layout())-> addWidget(new QLabel("Неверный логин или пароль!"),2,1);
 	}
 }
 
 void PasswordDialog::closeEvent(QCloseEvent *event){
-	emit user_is_enter(ret_status);
+	if(ret_status) emit user_is_enter();
 	event->accept();
 	delete this;
 }

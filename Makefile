@@ -64,7 +64,11 @@ SOURCES       = src/main.cpp \
 		src/SQL_Manager.cpp \
 		src/SQL_TABLES.cpp \
 		src/VIEW_COL_OF_TABLE.cpp \
-		src/SchedulesView.cpp qrc_resources.cpp \
+		src/SchedulesView.cpp \
+		src/SchedulesEditor.cpp \
+		src/SQLTableHolder.cpp \
+		src/Printer.cpp \
+		src/ContractManager.cpp qrc_resources.cpp \
 		moc_MainWindow.cpp \
 		moc_SearchWindow.cpp \
 		moc_PasswordDialog.cpp \
@@ -73,7 +77,9 @@ SOURCES       = src/main.cpp \
 		moc_InputField.cpp \
 		moc_EditField.cpp \
 		moc_SQLTableView.cpp \
-		moc_SchedulesView.cpp
+		moc_SchedulesView.cpp \
+		moc_SchedulesEditor.cpp \
+		moc_SQLTableHolder.cpp
 OBJECTS       = main.o \
 		MainWindow.o \
 		SearchWindow.o \
@@ -87,6 +93,10 @@ OBJECTS       = main.o \
 		SQL_TABLES.o \
 		VIEW_COL_OF_TABLE.o \
 		SchedulesView.o \
+		SchedulesEditor.o \
+		SQLTableHolder.o \
+		Printer.o \
+		ContractManager.o \
 		qrc_resources.o \
 		moc_MainWindow.o \
 		moc_SearchWindow.o \
@@ -96,7 +106,9 @@ OBJECTS       = main.o \
 		moc_InputField.o \
 		moc_EditField.o \
 		moc_SQLTableView.o \
-		moc_SchedulesView.o
+		moc_SchedulesView.o \
+		moc_SchedulesEditor.o \
+		moc_SQLTableHolder.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
 		/usr/lib/qt/mkspecs/common/linux.conf \
@@ -213,7 +225,11 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		src/SQL_Manager.h \
 		src/SQL_TABLES.h \
 		src/VIEW_COL_OF_TABLE.h \
-		src/SchedulesView.h src/main.cpp \
+		src/SchedulesView.h \
+		src/SchedulesEditor.h \
+		src/SQLTableHolder.h \
+		src/Printer.h \
+		src/ContractManager.h src/main.cpp \
 		src/MainWindow.cpp \
 		src/SearchWindow.cpp \
 		src/PasswordDialog.cpp \
@@ -225,7 +241,11 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		src/SQL_Manager.cpp \
 		src/SQL_TABLES.cpp \
 		src/VIEW_COL_OF_TABLE.cpp \
-		src/SchedulesView.cpp
+		src/SchedulesView.cpp \
+		src/SchedulesEditor.cpp \
+		src/SQLTableHolder.cpp \
+		src/Printer.cpp \
+		src/ContractManager.cpp
 QMAKE_TARGET  = MedReg_Client
 DESTDIR       = 
 TARGET        = MedReg_Client
@@ -466,8 +486,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents src/MainWindow.h src/Table.h src/SearchWindow.h src/PasswordDialog.h src/EditorWindow.h src/BigEditorWindow.h src/InputField.h src/EditField.h src/SQLTableView.h src/SQL_Manager.h src/SQL_TABLES.h src/VIEW_COL_OF_TABLE.h src/SchedulesView.h $(DISTDIR)/
-	$(COPY_FILE) --parents src/main.cpp src/MainWindow.cpp src/SearchWindow.cpp src/PasswordDialog.cpp src/EditorWindow.cpp src/BigEditorWindow.cpp src/InputField.cpp src/EditField.cpp src/SQLTableView.cpp src/SQL_Manager.cpp src/SQL_TABLES.cpp src/VIEW_COL_OF_TABLE.cpp src/SchedulesView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents src/MainWindow.h src/Table.h src/SearchWindow.h src/PasswordDialog.h src/EditorWindow.h src/BigEditorWindow.h src/InputField.h src/EditField.h src/SQLTableView.h src/SQL_Manager.h src/SQL_TABLES.h src/VIEW_COL_OF_TABLE.h src/SchedulesView.h src/SchedulesEditor.h src/SQLTableHolder.h src/Printer.h src/ContractManager.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/main.cpp src/MainWindow.cpp src/SearchWindow.cpp src/PasswordDialog.cpp src/EditorWindow.cpp src/BigEditorWindow.cpp src/InputField.cpp src/EditField.cpp src/SQLTableView.cpp src/SQL_Manager.cpp src/SQL_TABLES.cpp src/VIEW_COL_OF_TABLE.cpp src/SchedulesView.cpp src/SchedulesEditor.cpp src/SQLTableHolder.cpp src/Printer.cpp src/ContractManager.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -505,9 +525,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/qt/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -flto -fno-fat-lto-objects -Wall -Wextra -dM -E -o moc_predefs.h /usr/lib/qt/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_BigEditorWindow.cpp moc_InputField.cpp moc_EditField.cpp moc_SQLTableView.cpp moc_SchedulesView.cpp
+compiler_moc_header_make_all: moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_BigEditorWindow.cpp moc_InputField.cpp moc_EditField.cpp moc_SQLTableView.cpp moc_SchedulesView.cpp moc_SchedulesEditor.cpp moc_SQLTableHolder.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_BigEditorWindow.cpp moc_InputField.cpp moc_EditField.cpp moc_SQLTableView.cpp moc_SchedulesView.cpp
+	-$(DEL_FILE) moc_MainWindow.cpp moc_SearchWindow.cpp moc_PasswordDialog.cpp moc_EditorWindow.cpp moc_BigEditorWindow.cpp moc_InputField.cpp moc_EditField.cpp moc_SQLTableView.cpp moc_SchedulesView.cpp moc_SchedulesEditor.cpp moc_SQLTableHolder.cpp
 moc_MainWindow.cpp: src/MainWindow.h \
 		src/Table.h \
 		moc_predefs.h \
@@ -566,6 +586,20 @@ moc_SchedulesView.cpp: src/SchedulesView.h \
 		/usr/bin/moc
 	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SchedulesView.h -o moc_SchedulesView.cpp
 
+moc_SchedulesEditor.cpp: src/SchedulesEditor.h \
+		src/EditField.h \
+		src/InputField.h \
+		src/Table.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SchedulesEditor.h -o moc_SchedulesEditor.cpp
+
+moc_SQLTableHolder.cpp: src/SQLTableHolder.h \
+		src/Table.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/afruba/MyGit/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/afruba/MyGit -I/home/afruba/MyGit -I/usr/include/qt -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtCore -I/usr/include/c++/15.2.1 -I/usr/include/c++/15.2.1/x86_64-pc-linux-gnu -I/usr/include/c++/15.2.1/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/15.2.1/include-fixed -I/usr/include src/SQLTableHolder.h -o moc_SQLTableHolder.cpp
+
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
@@ -594,8 +628,9 @@ MainWindow.o: src/MainWindow.cpp src/MainWindow.h \
 		src/EditorWindow.h \
 		src/EditField.h \
 		src/BigEditorWindow.h \
-		src/SQLTableView.h \
-		src/SchedulesView.h
+		src/SQLTableHolder.h \
+		src/SchedulesView.h \
+		src/SchedulesEditor.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
 SearchWindow.o: src/SearchWindow.cpp src/SearchWindow.h \
@@ -618,7 +653,8 @@ EditorWindow.o: src/EditorWindow.cpp src/EditorWindow.h \
 		src/Table.h \
 		src/SQL_Manager.h \
 		src/SQL_TABLES.h \
-		src/SearchWindow.h
+		src/SearchWindow.h \
+		src/ContractManager.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EditorWindow.o src/EditorWindow.cpp
 
 BigEditorWindow.o: src/BigEditorWindow.cpp src/BigEditorWindow.h \
@@ -627,7 +663,8 @@ BigEditorWindow.o: src/BigEditorWindow.cpp src/BigEditorWindow.h \
 		src/Table.h \
 		src/SQL_Manager.h \
 		src/SQL_TABLES.h \
-		src/SearchWindow.h
+		src/SearchWindow.h \
+		src/ContractManager.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BigEditorWindow.o src/BigEditorWindow.cpp
 
 InputField.o: src/InputField.cpp src/InputField.h \
@@ -645,6 +682,7 @@ SQLTableView.o: src/SQLTableView.cpp src/SQLTableView.h \
 		src/EditorWindow.h \
 		src/EditField.h \
 		src/InputField.h \
+		src/SchedulesEditor.h \
 		src/VIEW_COL_OF_TABLE.h \
 		src/SQL_Manager.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SQLTableView.o src/SQLTableView.cpp
@@ -663,8 +701,40 @@ VIEW_COL_OF_TABLE.o: src/VIEW_COL_OF_TABLE.cpp src/VIEW_COL_OF_TABLE.h \
 
 SchedulesView.o: src/SchedulesView.cpp src/SchedulesView.h \
 		src/Table.h \
-		src/SQL_Manager.h
+		src/SQLTableView.h \
+		src/SQL_Manager.h \
+		src/SchedulesEditor.h \
+		src/EditField.h \
+		src/InputField.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SchedulesView.o src/SchedulesView.cpp
+
+SchedulesEditor.o: src/SchedulesEditor.cpp src/SchedulesEditor.h \
+		src/EditField.h \
+		src/InputField.h \
+		src/Table.h \
+		src/SQL_Manager.h \
+		src/SQL_TABLES.h \
+		src/SearchWindow.h \
+		src/Printer.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SchedulesEditor.o src/SchedulesEditor.cpp
+
+SQLTableHolder.o: src/SQLTableHolder.cpp src/SQLTableHolder.h \
+		src/Table.h \
+		src/SQLTableView.h \
+		src/InputField.h \
+		src/SQL_TABLES.h \
+		src/VIEW_COL_OF_TABLE.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SQLTableHolder.o src/SQLTableHolder.cpp
+
+Printer.o: src/Printer.cpp src/Printer.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Printer.o src/Printer.cpp
+
+ContractManager.o: src/ContractManager.cpp src/ContractManager.h \
+		src/SQL_Manager.h \
+		src/Table.h \
+		src/SQL_TABLES.h \
+		src/Printer.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ContractManager.o src/ContractManager.cpp
 
 qrc_resources.o: qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp
@@ -695,6 +765,12 @@ moc_SQLTableView.o: moc_SQLTableView.cpp
 
 moc_SchedulesView.o: moc_SchedulesView.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SchedulesView.o moc_SchedulesView.cpp
+
+moc_SchedulesEditor.o: moc_SchedulesEditor.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SchedulesEditor.o moc_SchedulesEditor.cpp
+
+moc_SQLTableHolder.o: moc_SQLTableHolder.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SQLTableHolder.o moc_SQLTableHolder.cpp
 
 ####### Install
 

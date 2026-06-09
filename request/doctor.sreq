@@ -4,6 +4,6 @@ select
     human.phone_number,
     doctor.office,
     doctor.on_vacation,
-    doctor.on_work 
-FROM doctor inner JOIN human ON human.human_id = doctor.human_id
-ORDER BY doctor.doctor_id;
+    doctor.on_work,
+    human.place_of_life
+FROM doctor inner JOIN human ON human.human_id = doctor.human_id;

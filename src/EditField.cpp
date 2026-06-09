@@ -20,9 +20,15 @@ void EditField::open_search_wnd(){
 	else{
 		search_wnd_p = new SearchWindow(sql_cn, get_line_edit(),tbl, 0);
 		connect(search_wnd_p, &QObject::destroyed, this, &EditField::remove_search_wnd);
+		connect(search_wnd_p, SIGNAL(double_clicked()), this, SLOT(emit_signal_finished()));
 	}
 }
 
 void EditField::remove_search_wnd(){
+	//
 	search_wnd_p = nullptr;
+}
+
+void EditField::emit_signal_finished(){
+	InputField::emit_signal_finished();
 }

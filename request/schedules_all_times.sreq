@@ -1,0 +1,2 @@
+SELECT to_char(schedules.action_date, 'HH24:MI') from schedules
+where to_char(schedules.action_date, 'yyyy Mon dd')=;

@@ -23,6 +23,8 @@ public slots:
 	void change_table(int index);
 	void change_column(int index);
 	void set_value_to_le(QString);
+signals:
+	void double_clicked();
 private:
 	pqxx::connection *sql_cn;
 	QComboBox *cb_table = 0;

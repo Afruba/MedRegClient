@@ -79,12 +79,10 @@ void SearchWindow::closeEvent (QCloseEvent *event){
 }
 
 void SearchWindow::CheckAllFields(){
-	//if (input_field->CheckInput())
 	StartSearch();
 }
 
 void SearchWindow::StartSearch(){
-	qDebug()<<"Satrt Search";
 	QList<TableElement> tbl_obj = get_h_table(cb_table->currentIndex());
 	QString v = input_field -> get_value();
 	qDebug()<<v;
@@ -102,7 +100,6 @@ void SearchWindow::StartSearch(){
 }
 
 void SearchWindow::change_table(int index){
-	qDebug()<<"change_table: "<<index;
 	cb_column -> clear();
 	QList<TableElement> tbl = get_h_table(index);
 	for(short c=0; c<tbl.size(); c++){
@@ -113,15 +110,12 @@ void SearchWindow::change_table(int index){
 }
 
 void SearchWindow::change_column(int index){
-	qDebug()<<"change_column: "<<index;
 	if(index==-1) return;
 	QList<TableElement> tbl = get_h_table(cb_table->currentIndex());
 	input_field -> change_table_element(tbl[index], true);
 }
 
 void SearchWindow::set_value_to_le(QString v){
-	qDebug()<<v;
 	le -> setText(v);
-	qDebug()<<"CHANGE";
-	//close();
+	emit double_clicked();
 }

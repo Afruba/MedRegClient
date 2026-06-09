@@ -10,7 +10,7 @@ public:
 	PasswordDialog(pqxx::connection* sql_cn);
 	~PasswordDialog();
 signals:
-	void user_is_enter(bool status);
+	void user_is_enter();
 public slots:
 	void check_input();
 	void closeEvent(QCloseEvent *event);

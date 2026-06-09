@@ -2,6 +2,7 @@
 #include "SQL_Manager.h"
 #include "SQL_TABLES.h"
 #include "SearchWindow.h"
+#include "ContractManager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -9,8 +10,9 @@
 #include <QMessageBox>
 #include <QCheckBox>
 #include <QDebug>
+#include <QDate>
 #include <QLineEdit>
-
+#include <QFrame>
 
 
 const short PASSPORT_ELEMENT_CNT = SQLTable_Passport.size();
@@ -18,10 +20,14 @@ const short PASSPORT_ELEMENT_CNT = SQLTable_Passport.size();
 BigEditorWindow::BigEditorWindow(SQLTable t, bool add_mode, pqxx::connection *sql_cn, QString id):
 add_mode(add_mode), sql_cn(sql_cn), sql_tbl(t), use_passport(true){
 	QHBoxLayout *layout = new QHBoxLayout(this);
-
+	QFrame *line = new QFrame(this);
+	line->setFrameShape(QFrame::VLine); // Horizontal line
+	line->setFrameShadow(QFrame::Sunken);
+	line->setLineWidth(1);
 	if (add_mode){
 		setWindowTitle("Добавление элемента");
 		add_edit_column(Passport);
+		layout->addWidget(line);
 		add_edit_column(Human);
 	}
 	else{
@@ -36,6 +42,11 @@ add_mode(add_mode), sql_cn(sql_cn), sql_tbl(t), use_passport(true){
 		object_id.push_back(data[0]);
 		object_id.push_back(id);
 	}
+	line = new QFrame(this);
+	line->setFrameShape(QFrame::VLine); // Horizontal line
+	line->setFrameShadow(QFrame::Sunken);
+	line->setLineWidth(1);
+	layout->addWidget(line);
 	add_edit_column(t, id);
 
 
@@ -61,16 +72,18 @@ add_mode(add_mode), sql_cn(sql_cn), sql_tbl(t), use_passport(true){
 BigEditorWindow::~BigEditorWindow(){
 	QLayoutItem *li = 0;
 	while ((li = layout()->takeAt(0)) != nullptr){
+		if(li->widget()->layout() != 0){
 		QLayoutItem *li_c = 0;
-		while ((li_c = li->layout()->takeAt(0)) != nullptr){
-			delete li_c->widget();
-			delete li_c;
+			while ((li_c = li->widget()->layout()->takeAt(0)) != nullptr){
+				qDebug()<<li_c->widget();
+				delete li_c->widget();
+				delete li_c;
+			}
 		}
 
 		delete li->widget();
 		delete li;
 	}
-	delete layout();
 }
 
 void BigEditorWindow::closeEvent (QCloseEvent *event){
@@ -80,6 +93,7 @@ void BigEditorWindow::closeEvent (QCloseEvent *event){
 
 void BigEditorWindow::add_edit_column(SQLTable t, QString id){
 	QWidget *holder = new QWidget();
+
 	QVBoxLayout *h_layout = new QVBoxLayout(holder);
 
 	QStringList data{};
@@ -101,11 +115,25 @@ void BigEditorWindow::add_edit_column(SQLTable t, QString id){
 
 void BigEditorWindow::CheckAllFields(){
 	bool result = true;
-	for(short i=0; i<all_fields.size(); i++){
+	short i=0;
+	if(!use_passport) i=get_sql_table(Passport).size();
+	for(; i<all_fields.size(); i++){
 		bool b = all_fields.at(i) -> CheckInput();
 		all_fields.at(i) -> SetIndicator(b);
 		result *= b;
 	}
+	if(use_passport){//Проверка на возраст выдачи
+		QDate give_date = all_fields[3]->get_date();
+		QDate birth_date = all_fields[6]->get_date();
+		if(give_date.year()-birth_date.year()<14) result=false;
+		else if(give_date.year()-birth_date.year()==14 && give_date.month()-birth_date.month()<0) result=false;
+		else if(give_date.year()-birth_date.year()==14 && give_date.month()-birth_date.month()>=0 && give_date.day()-birth_date.day()<0) result=false;
+		if(!result){
+			all_fields[3] -> SetIndicator(false);
+			all_fields[6] -> SetIndicator(false);
+		}
+	}
+
 	if (result){
 		QMessageBox::StandardButton reply;
 		QString text = "Подтвердить?";
@@ -157,6 +185,7 @@ void BigEditorWindow::ApplyChange(){
 }
 
 void BigEditorWindow::AddToDB(){
+	
 	QStringList data{};
 	QList<TableElement> sql_tbl_obj = get_sql_table(Passport);
 	short offset = 0;
@@ -185,8 +214,11 @@ void BigEditorWindow::AddToDB(){
 		data.push_back(all_fields[i+offset] -> get_value());
 	}
 	data[data.size()-1] = QString::number(last_id);
-	inster_data_in_table(data, TABLE_NAME[sql_tbl], sql_tbl_obj[0].column_name, sql_cn);
-	qDebug()<<data;
+	last_id = inster_data_in_table(data, TABLE_NAME[sql_tbl], sql_tbl_obj[0].column_name, sql_cn);
+	//Add contract
+	if(sql_tbl==Patient){
+		add_new_contract(QString("%1").arg(last_id), sql_cn);
+	}
 	emit data_is_changed();
 	close();
 }

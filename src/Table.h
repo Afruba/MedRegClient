@@ -1,8 +1,8 @@
 #ifndef H_TABLE
 #define H_TABLE
 #include <QString>
-
-enum DataType {Int = 0, String, Char, Bool, Telephone, Date, Time, Timestamp, Text, StrInt};
+//SQL отдайт дату в виде "2055-01-01 10:30:00"
+enum DataType {Int = 0, String, Char, Bool, Telephone, Date, Time, Timestamp, Text, StrInt, Sex};
 enum SQLTable {NULL_T = -1, Patient, Schedules, MedDoc, Service, Doctor, Contract, Human, Passport};
 
 struct SQLFilter

@@ -7,7 +7,14 @@
 #include <QCloseEvent>
 class QStandardItemModel;
 class PasswordDialog;
-class SQLTableView;
+class SQLTableHolder;
+
+/*!
+ \ *brief Главное и основное окно программы
+
+ Данный класс имеет только одну простую цель: проиллюстрировать то,
+как Doxygen документирует наследование
+*/
 class MainWindow: public QMainWindow{
 Q_OBJECT;
 public:
@@ -23,7 +30,6 @@ public slots:
 	void update_page();
 	void add_to_cur_table();
 	void add_to_oth_table(short id);
-	void add_new_patient();
 	void exit_from_acc();
 	void quit_from_app();
 	void get_answer_from_pd(bool status);
@@ -38,7 +44,7 @@ private:
 
 	QList<TableElement>& get_human_table(short id);
 	QList<TableElement>& get_current_table();
-	SQLTableView* get_current_table_view();
+	//SQLTableHolder* get_current_table_view();
 	void delete_CW();
 	QWidget *centrall_widget		= 0;
 	bool menu_is_create				= false;

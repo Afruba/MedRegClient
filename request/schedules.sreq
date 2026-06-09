@@ -1,5 +1,6 @@
 select
   schedules.action_id,
+  schedules.service_id,
   service.service_name,
   concat_ws(' ',H1.human_name, H1.human_surname, H1.human_patronymic) as FIO_P,
   concat_ws(' ',H2.human_name, H2.human_surname, H2.human_patronymic) as FIO_D,

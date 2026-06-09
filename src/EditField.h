@@ -11,6 +11,7 @@ public:
 public slots:
 	void open_search_wnd();
 	void remove_search_wnd();
+	void emit_signal_finished();
 private:
 	pqxx::connection *sql_cn;
 	QWidget *search_wnd_p = nullptr;

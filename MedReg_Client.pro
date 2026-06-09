@@ -8,6 +8,7 @@ INCLUDEPATH += .
 QT += core widgets
 LIBS += /usr/lib/libpqxx.so
 RESOURCES = resources.qrc
+RC_ICONS = res/icon.png
 
 HEADERS += src/MainWindow.h \
 src/Table.h \
@@ -22,6 +23,10 @@ src/SQL_Manager.h \
 src/SQL_TABLES.h \
 src/VIEW_COL_OF_TABLE.h \
 src/SchedulesView.h \
+src/SchedulesEditor.h \
+src/SQLTableHolder.h \
+src/Printer.h \
+src/ContractManager.h
 
 SOURCES += src/main.cpp \
 src/MainWindow.cpp \
@@ -36,3 +41,7 @@ src/SQL_Manager.cpp \
 src/SQL_TABLES.cpp \
 src/VIEW_COL_OF_TABLE.cpp \
 src/SchedulesView.cpp \
+src/SchedulesEditor.cpp \
+src/SQLTableHolder.cpp \
+src/Printer.cpp \
+src/ContractManager.cpp

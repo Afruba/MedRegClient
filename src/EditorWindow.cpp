@@ -2,12 +2,13 @@
 #include "SQL_Manager.h"
 #include "SQL_TABLES.h"
 #include "SearchWindow.h"
+#include "ContractManager.h"
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLabel>
 #include <QMessageBox>
 #include <QDebug>
-
+#include <QDate>
 
 
 
@@ -20,9 +21,9 @@ add_mode(add_mode), sql_cn(sql_cn), object_id(id), sql_tbl(t){
 	
 	QStringList data{};
 	if(!add_mode) get_row_data_from_tbl(data, TABLE_NAME[t], get_sql_table(t)[0].column_name, id, sql_cn);
-
 	QList<TableElement> sql_tbl_obj = get_sql_table(t);
 	for(short i=0; i<sql_tbl_obj.size(); i++){
+		qDebug()<<i;
 		EditField *field = new EditField(sql_tbl_obj[i], sql_cn);
 		all_fields.push_back(field);
 		if(!add_mode) field -> set_value(data[i]);
@@ -33,23 +34,25 @@ add_mode(add_mode), sql_cn(sql_cn), object_id(id), sql_tbl(t){
 	else apply_button = new QPushButton("Изменить");
 	connect(apply_button, &QPushButton::pressed, this, &EditorWindow::CheckAllFields);
 	layout -> addWidget(apply_button);
-
 	if(!add_mode){
 		QPushButton *del_button	 = new QPushButton("Удалить");
 		connect(del_button, &QPushButton::pressed, this, &EditorWindow::delete_data);
 		layout -> addWidget(del_button);
 	}
-
+	if(t==Contract && !add_mode){
+		QPushButton *print_button = new QPushButton("Печать");
+		connect(print_button, &QPushButton::pressed, this, &EditorWindow::print_this_contract);
+		layout -> addWidget(print_button);
+	}
 	show();
 }
 
 EditorWindow::~EditorWindow(){
 	QLayoutItem *li = 0;
-	while ((li = layout()->takeAt(0)) != nullptr){
+	while((li = layout()->takeAt(0)) != nullptr){
 		delete li->widget();
 		delete li;
 	}
-	delete layout();
 }
 
 void EditorWindow::closeEvent (QCloseEvent *event){
@@ -63,6 +66,13 @@ void EditorWindow::CheckAllFields(){
 		bool b = all_fields.at(i) -> CheckInput();
 		all_fields.at(i) -> SetIndicator(b);
 		result *= b;
+	}
+	if(sql_tbl==Passport){
+		QDate give_date = all_fields[3]->get_date();
+		QDate birth_date = all_fields[6]->get_date();
+		if(give_date.year()-birth_date.year()<14) result=false;
+		else if(give_date.year()-birth_date.year()==14 && give_date.month()-birth_date.month()<0) result=false;
+		else if(give_date.year()-birth_date.year()==14 && give_date.month()-birth_date.month()>=0 && give_date.day()-birth_date.day()<0) result=false;
 	}
 	if (result && sql_tbl==Schedules){
 		result = !SQL_check_doctor_in_service(all_fields[1]->get_value(), sql_cn);
@@ -127,4 +137,8 @@ void EditorWindow::delete_data(){
 		emit data_is_changed();
 		close();
 	}
+}
+
+void EditorWindow::print_this_contract(){
+	print_contract(object_id ,sql_cn);
 }

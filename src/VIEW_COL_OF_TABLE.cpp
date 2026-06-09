@@ -6,16 +6,19 @@ QList<TableElement> HTable_Patient{
 	TableElement("passport.date_of_birth",	"Дата рож.",			Date,	Passport),
 	TableElement("medcard_number",			"№ Мед Карты",			Int),
 	TableElement("place_of_work",			"Место работы",			String, NULL_T,		false, 80, true),
-	TableElement("human.phone_number",		"Номер Телефона",		Telephone, NULL_T,	false, 16)};
+	TableElement("human.phone_number",		"Номер Телефона",		Telephone, NULL_T,	false, 16),
+	TableElement("human.place_of_life",		"Место жительства",		String, NULL_T, 	false, 100)
+};
 	//1
 QList<TableElement> HTable_Schedules{
 	TableElement("action_id",				"Номер",	Int,	NULL_T,		true),
+	TableElement("service_id",				"№ Услуги",	Int,	NULL_T,		false),
 	TableElement("service.service_name",	"Услуга",	String, NULL_T,		false, 64),
-	TableElement("concat_ws(' ',human_name, human_surname, human_patronymic)", "Пациент",	String, Human,		false, 74, true),
-	TableElement("Врач",								String, Doctor),
+	TableElement("concat_ws(' ',H1.human_name, H1.human_surname, H1.human_patronymic)", "Пациент",	String, Human,		false, 74, true),
+	TableElement("concat_ws(' ',H2.human_name, H2.human_surname, H2.human_patronymic)", "Врач",		String, Doctor),
 	TableElement("doctor.office",			"Кабинет",	String, NULL_T,		false, 4, true),
-	TableElement("schedules.action_date",	"Дата",		Timestamp),
-	TableElement("schedules.action_date",	"Вермя",		Timestamp),
+	TableElement("schedules.action_date",	"Дата",		Date),
+	TableElement("schedules.action_date",	"Вермя",	Time),
 	TableElement("schedules.status",		"Статус",	Bool)};
 	//2
 QList<TableElement> HTable_MedDocs{
@@ -43,14 +46,15 @@ QList<TableElement> HTable_Doctor{
 	TableElement("human.phone_number",	"Номер Телефона",		Telephone, NULL_T,	false, 16),
 	TableElement("office",				"Кабинет",				String, NULL_T,		false, 4, true),
 	TableElement("doctor.on_vacation",	"В отпуске",			Bool),
-	TableElement("doctor.on_work",		"На работе",			Bool)
+	TableElement("doctor.on_work",		"На работе",			Bool),
+	TableElement("human.place_of_life",		"Место жительства",		String, NULL_T, 	false, 100)
 };
 	//5
 QList<TableElement> HTable_Contract{
 	TableElement("contract.contract_id", 	"ID",				Int,	NULL_T,		true),
 	TableElement("contract.contract_title", "Контракт",			String,	NULL_T,		false, 80, true),
-	TableElement("concat_ws(' ',human_name, human_surname, human_patronymic)", "Заказчик",		String, Human,		false, 74, true),
-	TableElement("Исполнитель",									String),
+	TableElement("concat_ws(' ',H1.human_name, H1.human_surname, H1.human_patronymic)", "Заказчик",		String, Human,		false, 74, true),
+	TableElement("concat_ws(' ',H2.human_name, H2.human_surname, H2.human_patronymic)", "Исполнитель",	String),
 	TableElement("contract.date_of_create", "Дата создания",	Date)
 };
 	//6
@@ -61,7 +65,8 @@ QList<TableElement> HTable_Human{
 	TableElement("human_patronymic",	"Отчество",				String, NULL_T, 	false, 30),
 	TableElement("human_gender",		"Пол",					Char),
 	TableElement("posport_number",		"Номер Паспорта",		StrInt,	Passport,	false, 6, true),
-	TableElement("phone_number",		"Номер Телефона",		Telephone, NULL_T,	false, 16)
+	TableElement("phone_number",		"Номер Телефона",		Telephone, NULL_T,	false, 16),
+	TableElement("place_of_life",		"Место жительства",		String, NULL_T, 	false, 100)
 };
 	//6
 QList<TableElement> HTable_Passport{

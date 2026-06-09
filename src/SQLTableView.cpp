@@ -1,20 +1,28 @@
 #include "SQLTableView.h"
 #include "EditorWindow.h"
+#include "SchedulesEditor.h"
 #include "VIEW_COL_OF_TABLE.h"
 #include "SQL_Manager.h"
+#include <QHeaderView>
 SQLTableView::SQLTableView(short tbl_id, pqxx::connection *sql_cn, bool editable, const QList<SQLFilter> &filters):
 QTableView(), sql_tbl_id(tbl_id), sql_cn(sql_cn){
 	setModel(create_model_for_table(tbl_id, filters));
 	setEditTriggers(QAbstractItemView::NoEditTriggers);
+	// this -> horizontalHeader()->setStretchLastSection(true);
+	for(char i=0; i<model()->columnCount(); i++){
+		this -> horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+	}
 	if(editable) connect(this, &QTableView::doubleClicked, this, &SQLTableView::edit_row);
 	connect(this, &QTableView::doubleClicked, this, &SQLTableView::dc_on_row);
 }
 
 SQLTableView::~SQLTableView(){
+	if(editor_wnd!=0) delete editor_wnd;
 }
 
-QStandardItemModel* SQLTableView::create_model_for_table(short tbl_id, const QList<SQLFilter> &filters){
+QStandardItemModel* SQLTableView::create_model_for_table(short tbl_id, const QList<SQLFilter> &_filters){
 	SQLTable tbl = static_cast<SQLTable>(tbl_id);
+	filters = _filters;
 	QList<TableElement> tbl_obj = get_h_table(tbl);
 	QStandardItemModel* model =  new QStandardItemModel(0, tbl_obj.size());
 	for (short i=0; i<tbl_obj.size(); i++){
@@ -49,16 +57,33 @@ void SQLTableView::change_model(short tbl_id, const QList<SQLFilter> &filters){
 }
 
 void SQLTableView::update(){
-	setModel(create_model_for_table(sql_tbl_id));
+	setModel(create_model_for_table(sql_tbl_id, filters));
+}
+void SQLTableView::update_f( const QList<SQLFilter> &_filters){
+	filters = _filters;
+	setModel(create_model_for_table(sql_tbl_id, filters));
 }
 
 void SQLTableView::edit_row(const QModelIndex &index){
+	if(editor_wnd!=0){
+		editor_wnd -> activateWindow();
+		return;
+	}
 	QModelIndex mIndex = model()->index(index.row(), 0);
 	QString object_id = (mIndex.data()).toString();
-	EditorWindow *ew = new EditorWindow(static_cast<SQLTable>(sql_tbl_id), false, sql_cn, object_id);
-    //all_ew_points.push_back(ew);
-	connect(ew, &EditorWindow::data_is_changed, this, &SQLTableView::update);
-	//connect(ew, SIGNAL(destroyed(QObject*)), this, SLOT(remove_closed_ew(QObject*)));
+	if(sql_tbl_id==Passport) object_id = '\''+object_id+'\'';
+	if(sql_tbl_id==Schedules){
+		SchedulesEditor *ew = new SchedulesEditor(false, sql_cn, "", object_id);
+		editor_wnd = ew;
+		connect(ew, &SchedulesEditor::data_is_changed, this, &SQLTableView::update);
+		connect(ew, &QObject::destroyed, this, &SQLTableView::remove_closed_ew);
+	}
+	else{ 
+		EditorWindow *ew = new EditorWindow(static_cast<SQLTable>(sql_tbl_id), false, sql_cn, object_id);
+		editor_wnd = ew;
+		connect(ew, &EditorWindow::data_is_changed, this, &SQLTableView::update);
+		connect(ew, &QObject::destroyed, this, &SQLTableView::remove_closed_ew);
+	}
 }
 
 
@@ -71,4 +96,10 @@ void SQLTableView::dc_on_row(const QModelIndex &index){
 	QModelIndex mIndex = model()->index(index.row(), 0);
 	QString object_id = (mIndex.data()).toString();
 	emit itemIdChanged(object_id);
+}
+
+unsigned short SQLTableView::get_sql_tbl_id() {return sql_tbl_id;}
+
+void SQLTableView::remove_closed_ew(){
+	editor_wnd = 0;
 }
